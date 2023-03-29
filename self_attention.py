@@ -46,17 +46,17 @@ class SelfAttention(nn.Module):
         
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        query = self.query_w(x) # (N,T,H) T=(class_token + patch_token) トークン数
-        key = self.key_w(x) # (N,T,H)
-        value = self.value_w(x) # (N,T,H)
+        query: torch.Tensor = self.query_w(x) # (N,T,H) T=(class_token + patch_token) トークン数
+        key: torch.Tensor  = self.key_w(x) # (N,T,H)
+        value: torch.Tensor = self.value_w(x) # (N,T,H)
 
-        key_t = key.transpose(1,2) # (N,H,T)
+        key_t: torch.Tensor = key.transpose(1,2) # (N,H,T)
 
         # Attension Weight (N,T,T) = (N,T,H) @ (N,H,T)
-        self.attention_weight = F.softmax((query @ key_t).div_(self.dim_sqrt), dim=-1) # 最終次元方向にsoftmax
+        self.attention_weight: torch.Tensor = F.softmax((query @ key_t).div_(self.dim_sqrt), dim=-1) # 最終次元方向にsoftmax
 
         # 出力 (N,T,T) @ (N,T,H) = (N,T,H)
-        out = self.attention_weight @ value
+        out: torch.Tensor = self.attention_weight @ value
 
         return out
     

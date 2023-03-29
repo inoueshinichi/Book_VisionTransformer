@@ -52,11 +52,11 @@ class ImagePatchEmbedding(nn.Module):
 
     def forward(self, img: torch.Tensor) -> torch.Tensor:
         # (N, C, H, W) -> (N, D, H/P, W/P)
-        patchs_as_layer2d = self.image_patch_embedding(img)
+        patchs_as_layer2d: torch.Tensor = self.image_patch_embedding(img)
         # (N, D, H/P, W/P) -> (N, D, T=`H*W/P^2`)
-        patchs_as_vector = torch.flatten(patchs_as_layer2d, start_dim=-2, end_dim=-1)
+        patchs_as_vector: torch.Tensor = torch.flatten(patchs_as_layer2d, start_dim=-2, end_dim=-1)
         # (N, D, T) -> (N, T, D)
-        out = patchs_as_vector.transpose(1, 2)
+        out: torch.Tensor = patchs_as_vector.transpose(1, 2)
         return out
 
 

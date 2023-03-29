@@ -3,11 +3,11 @@ Input_1 (Patch+Positional Embed Tokens): (N, T, D)
 Input_2 (Class Token): (N, 1, D)
 Output: (N, T+1=`T`, D)
 
-Images ---> patch embedding tokens --------> cat -----> +----> (Encoder) 
-                                              |         |
-            class token ----------------------|         |
-                                                        |
-            positional embedding tokens -----------------
+Images ---> patch embedding tokens --------> (cat) -----> (+) ----> (Encoder) 
+                                               |           |
+            class token -----------------------|           |
+                                                           |
+            positional embedding tokens --------------------
 """
 
 from typing import *
@@ -56,7 +56,7 @@ class ViTInputLayer(nn.Module):
         self.batch_size = x.shape[0]
 
         # (N, T, D)
-        patch_tokens = self.image_patch_embedding(x)
+        patch_tokens: torch.Tensor = self.image_patch_embedding(x)
 
         """バッチ数分にパラメータ数を増やす.
         Class Token Embedding
@@ -66,12 +66,12 @@ class ViTInputLayer(nn.Module):
 
         # 系列長に調整
         # concatenate[(N, 1, D), (N, T, D)] -> (N, 1+T=`T`, D)
-        vit_tokens = torch.cat([self.params['class_token'], patch_tokens], dim=1)
+        vit_tokens: torch.Tensor = torch.cat([self.params['class_token'], patch_tokens], dim=1)
 
         # 位置埋め込み
-        vit_tokens = vit_tokens + self.params['positional_embedding']
+        out: torch.Tensor = vit_tokens + self.params['positional_embedding']
 
-        return vit_tokens
+        return out
     
 
 def test_vit_input_layer():

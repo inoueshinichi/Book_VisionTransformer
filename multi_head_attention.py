@@ -65,16 +65,16 @@ class MultiHeadAttention(nn.Module):
             px_list = [ x.clone() for _ in range(self.head_num) ]
 
         # multi self-attentions
-        out_list = []
+        out_list: List[torch.Tensor] = []
         for px, self_attention in zip(px_list, self.self_attention_list):
             pout = self_attention(px)
             out_list.append(pout)
 
         # concatenate
-        out = torch.cat(out_list, dim=-1)
+        mid: torch.Tensor = torch.cat(out_list, dim=-1)
 
         # aggregate
-        out = self.aggregation_w(out)
+        out: torch.Tensor = self.aggregation_w(mid)
 
         return out
 
