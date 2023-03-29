@@ -85,8 +85,6 @@ def test_batch_norm_2d():
     print('input_4dim: \n', input_4dim)
 
     output_4dim = batch_norm_2d(input_4dim)
-    print('output_4dim.shape', output_4dim.shape)
-    print('output_4dim: \n', output_4dim)
 
     gamma = batch_norm_2d.weight
     beta = batch_norm_2d.bias
@@ -94,6 +92,9 @@ def test_batch_norm_2d():
     print('gamma: \n', gamma)
     print('beta.shape', beta.shape)
     print('beta: \n', beta)
+
+    print('output_4dim.shape', output_4dim.shape)
+    print('output_4dim: \n', output_4dim)
 
 
 @test_name_deco
@@ -109,18 +110,36 @@ def test_batch_norm_3d():
 
     print('(N, C, D, H, W) input [Main]--------------------------------------')
 
+    input_5dim = torch.ones(N, C, D, H, W)
+    print('input_5dim.shape', input_5dim.shape)
+    print('input_5dim: \n', input_5dim)
 
+    output_5dim = batch_norm_3d(input_5dim)
 
+    gamma = batch_norm_3d.weight
+    beta = batch_norm_3d.bias
+    print('gamma.shape', gamma.shape)
+    print('gamma: \n', gamma)
+    print('beta.shape', beta.shape)
+    print('beta: \n', beta)
+
+    print('output_5dim.shape', output_5dim.shape)
+    print('output_5dim: \n', output_5dim)
 
 
 @test_name_deco
 def test_layer_norm():
-    # Input : (N, C, H, W), (N, C, D), etc
+    # Input : (N, C, H, W), (N, C, D), etc = (N, *)
+
+    v_t = torch.Tensor([[1, 2, 3], [4, 5, 6]])
+    print('v_t.shape', v_t.shape)
+    print('v_t: \n', v_t)
+    print('v_t.mean((-2,-1))', v_t.mean((-2,-1)))
 
     N = 2
     C = 3
-    H = 4
-    W = 4
+    H = 2
+    W = 2
     input = torch.ones(N,C,H,W)
     print('input.shape', input.shape)
     print('input: \n', input)
@@ -129,23 +148,35 @@ def test_layer_norm():
     print('output.shape', output.shape)
     print('output: \n', output)
 
+    # 次元(H=2,W=2)の4つの要素からスカラの平均値と標準偏差を計算して,
+    # (H=2,W=2)のテンソルに一様にAffine変換を行う(if elementwise_affine=True).
+    # Affine変換時のスケールパラメータγとシフトパラメータβの形状は(H=2,W=2).
     layer_norm = nn.LayerNorm(normalized_shape=(H,W), elementwise_affine=True)
-    output_layer_norm = layer_norm(input)
-    print('output_layer_nrom.shape', output_layer_norm.shape)
-    print('output_layer_nrom', output_layer_norm)
-
-    gamma = layer_norm.weight # γ (スケール学習パラメータ)
-    beta = layer_norm.bias # β (シフト学習パラメータ)
+    
+    gamma = layer_norm.weight # γ (スケールパラメータ with leanable)
+    beta = layer_norm.bias # β (シフトパラメータ with learnable)
     print('gamma.shape', gamma.shape)
     print('gamma: \n', gamma)
     print('beta.shape',beta.shape)
     print('beta: \n', beta)
+
+    output_layer_norm = layer_norm(input)
+    print('output_layer_nrom.shape', output_layer_norm.shape)
+    print('output_layer_nrom: \n', output_layer_norm)
+
+
+def test_instance_norm_1d():
+    pass
     
 
 if __name__ == "__main__":
     # Batch Norm
     # test_batch_norm_1d()
-    test_batch_norm_2d()
+    # test_batch_norm_2d()
+    # test_batch_norm_3d()
 
     # Layer Norm
     # test_layer_norm()
+
+    # Instance Norm
+    test_instance_norm_1d()
