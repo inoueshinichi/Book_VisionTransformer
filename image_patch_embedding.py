@@ -16,7 +16,7 @@ import torch.nn.functional as F
 
 class ImagePatchEmbedding(nn.Module):
 
-    def __init__(self, in_channels: int, embed_dim: int, image_size: Tuple[int, int], patch_num: Tuple[int, int]):
+    def __init__(self, in_channels: int, embed_dim: int, image_size: Tuple[int, int], num_patch: Tuple[int, int]):
         super(ImagePatchEmbedding, self).__init__()
 
         self.channels: int = in_channels  # 画像のチャンネル数
@@ -25,8 +25,8 @@ class ImagePatchEmbedding(nn.Module):
         self.image_h: int = image_size[0] # 画像高さ
         self.image_w: int = image_size[1] # 画像幅
 
-        self.num_patch_row: int = patch_num[0] # 縦方向のパッチ数
-        self.num_patch_col: int = patch_num[1] # 横方向のパッチ数
+        self.num_patch_row: int = num_patch[0] # 縦方向のパッチ数
+        self.num_patch_col: int = num_patch[1] # 横方向のパッチ数
 
         self.series_dim: int = self.num_patch_row * self.num_patch_col # 系列長(トークン数)
 
@@ -60,7 +60,7 @@ class ImagePatchEmbedding(nn.Module):
         return out
 
 
-def test_square_image_patch_embedding():
+def test_image_patch_embedding():
     
     # --- 動作確認用
     from matplotlib import pyplot as plt
@@ -110,4 +110,4 @@ def test_square_image_patch_embedding():
 
 
 if __name__ == "__main__":
-    test_square_image_patch_embedding()
+    test_image_patch_embedding()

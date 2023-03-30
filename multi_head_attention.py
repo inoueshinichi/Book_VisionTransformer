@@ -20,24 +20,23 @@ from self_attention import SelfAttention
 
 class MultiHeadAttention(nn.Module):
 
-    def __init__(self, series_dim: int, input_dim: int, output_dim: int, 
-                 head_num: int, divide_input_dim: bool=True):
+    def __init__(self, input_dim: int, output_dim: int, 
+                 num_head: int, divide_input_dim: bool=True):
         super(MultiHeadAttention, self).__init__()
 
-        self.series_dim = series_dim
         self.input_dim: int = input_dim
         self.output_dim: int = output_dim
-        self.head_num: int = head_num
+        self.num_head: int = num_head
         self.divide_input_dim: bool = divide_input_dim
         self.embed_in_dim: int = 0
         self.embed_out_dim: int = 0 
 
         # input_dimをhead_numで分割する場合
         if self.divide_input_dim:
-            fmod: float = self.input_dim % self.head_num
+            fmod: float = self.input_dim % self.num_head
             assert (int)(fmod) == 0, \
-                "No zero about mod(self.input_dim, self.head_num). Given is {%f}".format(fmod)
-            self.embed_in_dim = self.input_dim // self.head_num
+                "No zero about mod(self.input_dim, self.head_num). Given is {}".format(fmod)
+            self.embed_in_dim = self.input_dim // self.num_head
         else:
             self.embed_in_dim = self.input_dim
         
@@ -46,13 +45,11 @@ class MultiHeadAttention(nn.Module):
 
         # self-attentions
         self.self_attention_list: nn.ModuleList = nn.ModuleList([ 
-            SelfAttention(series_dim=self.series_dim, 
-                          input_dim=self.embed_in_dim, 
-                          output_dim=self.embed_out_dim) for _ in range(self.head_num) 
-            ])
+            SelfAttention(input_dim=self.embed_in_dim, output_dim=self.embed_out_dim) for _ in range(self.num_head) 
+        ])
 
         # aggregation linear weight
-        self.aggregation_w: nn.Linear = nn.Linear(self.head_num * self.embed_out_dim, self.output_dim, bias=False)
+        self.aggregation_w: nn.Linear = nn.Linear(self.num_head * self.embed_out_dim, self.output_dim, bias=False)
 
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -60,9 +57,9 @@ class MultiHeadAttention(nn.Module):
         # divide for last dimension
         px_list: Optional[List[torch.Tensor]] = None
         if self.divide_input_dim:
-            px_list = torch.chunk(x, self.head_num, dim=-1) # 最終次元をヘッド数で分割
+            px_list = torch.chunk(x, self.num_head, dim=-1) # 最終次元をヘッド数で分割
         else:
-            px_list = [ x.clone() for _ in range(self.head_num) ]
+            px_list = [ x.clone() for _ in range(self.num_head) ]
 
         # multi self-attentions
         out_list: List[torch.Tensor] = []
@@ -89,13 +86,14 @@ def test_multi_head_attention():
     print("input.requires_grad: ", input.requires_grad)
     
     output_dim = 18
-    multi_head_attention = MultiHeadAttention(series_dim=series_dim, 
-                                              input_dim=input_dim, 
+    multi_head_attention = MultiHeadAttention(input_dim=input_dim, 
                                               output_dim=output_dim, 
-                                              head_num=3,
+                                              num_head=3,
                                               divide_input_dim=True)
     
     print("multi head attention: ", multi_head_attention)
+    p_numel_list = [ p.numel() for p in multi_head_attention.parameters() ]
+    print("sum(p_numel_list): {}, p_numel_list: {}".format(sum(p_numel_list), p_numel_list))
 
     output = multi_head_attention(input)
     print("output.shape: ", output.shape)

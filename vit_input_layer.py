@@ -20,17 +20,17 @@ import torch.nn.functional as F
 from image_patch_embedding import ImagePatchEmbedding
 
 
-class ViTInputLayer(nn.Module):
+class VitInputLayer(nn.Module):
     
     def __init__(self, in_channels: int, embed_dim: int, 
-                 image_size: Tuple[int, int], patch_num: Tuple[int, int]):
-        super(ViTInputLayer, self).__init__()
+                 image_size: Tuple[int, int], num_patch: Tuple[int, int]):
+        super(VitInputLayer, self).__init__()
 
         self.image_patch_embedding = ImagePatchEmbedding(
             in_channels=in_channels,
             embed_dim=embed_dim,
             image_size=image_size,
-            patch_num=patch_num
+            num_patch=num_patch
         )
 
         self.series_dim: int = self.image_patch_embedding.series_dim
@@ -99,7 +99,7 @@ def test_vit_input_layer():
     # (1, 3, 32, 32)
     img_t = to_tensor(img).unsqueeze(0)
 
-    vit_input_layer = ViTInputLayer(
+    vit_input_layer = VitInputLayer(
         in_channels=3,
         embed_dim=64,
         image_size=(32, 32),

@@ -28,10 +28,9 @@ import torch.nn.functional as F
 
 class SelfAttention(nn.Module):
 
-    def __init__(self, series_dim: int, input_dim: int, output_dim: int):
+    def __init__(self, input_dim: int, output_dim: int):
         super(SelfAttention, self).__init__()
 
-        self.series_dim: int = series_dim
         self.input_dim: int = input_dim
         self.output_dim: int = output_dim
         self.dim_sqrt: float = output_dim ** 0.5
@@ -42,7 +41,7 @@ class SelfAttention(nn.Module):
         self.value_w: nn.Linear = nn.Linear(self.input_dim, self.output_dim, bias=False)
 
         # Attention Weight
-        self.attention_weight: torch.Tensor = torch.zeros(self.series_dim, self.series_dim, dtype=torch.float32, requires_grad=False)
+        self.attention_weight: Optional[torch.Tensor] = None
         
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -54,9 +53,10 @@ class SelfAttention(nn.Module):
 
         # Attension Weight (N,T,T) = (N,T,H) @ (N,H,T)
         self.attention_weight: torch.Tensor = F.softmax((query @ key_t).div_(self.dim_sqrt), dim=-1) # 最終次元方向にsoftmax
+        # print("self.attention_weight.requres_grad", self.attention_weight.requires_grad)
 
         # 出力 (N,T,T) @ (N,T,H) = (N,T,H)
-        out: torch.Tensor = self.attention_weight @ value
+        out: torch.Tensor = self.attention_weight @ value # 加重和
 
         return out
     
@@ -73,8 +73,10 @@ def test_self_attention():
 
     # Self Attention
     output_dim = 8
-    self_attention = SelfAttention(series_dim=series_dim, input_dim=input_dim, output_dim=output_dim)
+    self_attention = SelfAttention(input_dim=input_dim, output_dim=output_dim)
     print("self-attention: ", self_attention)
+    p_numel_list = [ p.numel() for p in self_attention.parameters() ]
+    print("sum(p_numel_list): {}, p_numel_list: {}".format(sum(p_numel_list), p_numel_list))
 
 
     # Output
@@ -84,10 +86,11 @@ def test_self_attention():
 
     # Attention Weight
     print("attention weight.shape: ", self_attention.attention_weight.size())
-    print("attention weight: ", self_attention.attention_weight)
+    print("attention_weight.requres_grad", self_attention.attention_weight.requires_grad)
+    print("attention weight: \n", self_attention.attention_weight)
 
     # Sum Attention Weight along last dimension
-    print("Sum of attention weight along row: ", self_attention.attention_weight.sum(dim=-1))
+    print("Sum of attention weight along row: \n", self_attention.attention_weight.sum(dim=-1))
 
 if __name__ == '__main__':
     test_self_attention()
