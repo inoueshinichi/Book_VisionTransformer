@@ -1,6 +1,6 @@
 # Book_VisionTransformer
 Tutorial of ViT(Vision Transformer)
-https://gihyo.jp/book/2022/978-4-297-13058-9
++ https://gihyo.jp/book/2022/978-4-297-13058-9
 
 第1章 TransformerからVision Transformerへの進化<br>
 1-1 自然言語処理におけるTransformerの登場<br>
